@@ -1,0 +1,9 @@
+{
+  "name": "My Boksapp",
+  "short_name": "Boksapp",
+  "theme_color": "#1a78c3",
+  "background_color": "#2196f3",
+  "display": "browser",
+  "scope": "/",
+  "start_url": "/"
+}

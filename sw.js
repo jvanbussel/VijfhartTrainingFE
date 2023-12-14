@@ -33,6 +33,8 @@ self.addEventListener('fetch', (ev) => {
                     }
                 );
 
+                console.log("nieuw request:", nieuwRequest)
+
                 return fetch(nieuwRequest); //Hier wordt een Promise verwacht
             } else {
                 return fetch(ev.request);

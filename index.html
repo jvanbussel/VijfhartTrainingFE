@@ -1,104 +1,46 @@
 <html>
-<link rel="manifest" href="./manifest.json" />
 <head>
-	<script>
-	window.onload = function(){
-		
-		// GET EVENT AFHANDELING (o.a. voor DELETE)
-		document.getElementById("getButton").addEventListener("click", function(ev){
-			ev.preventDefault();
-			
-			const getHTTP = new XMLHttpRequest();
-			const getURL = "https://jsonplaceholder.typicode.com/posts";
+    <script>
+        window.onload = function(){
 
-			getHTTP.onreadystatechange = function(){
-			  if (this.readyState==4 && this.status==200){
-				// Elke LI een volgend element uit de responseText array
-				document.getElementById("resultGet").innerHTML = 
-					"Resultaat\n"+JSON.parse(this.responseText).map((e,i)=>`<li>${e.userId}, ${e.id}, ${e.title}, ${e.body}</li>`).join('');
-			  } 
-			};
+            let socket = new WebSocket('ws://localhost:8080');
 
-			getHTTP.open("GET", getURL, true);
-			getHTTP.send(); 
-		});
-	};
+            // Bij connectie open:
+            socket.onopen = function(ev) {
+                console.log('Verbinding gemaakt!');
+            };
 
-	if ('serviceWorker' in navigator) {
-		navigator.serviceWorker.register("./sw.js");
-	}
+            // Bij mislukte connectie:
+            socket.onerror = function(err){
+                console.log(`Er is iets misgegaan: ${err}`)
+            }
 
-	if ('pushManager' in window){
-		console.log("Push berichten worden ondersteund!");
-	}
+            // Bij ontvangen van bericht:
+            socket.onmessage = function(ev) {
+                let bericht = ev.data;
+                let item = document.createElement("span");
+                item.textContent = bericht;
+                document.body.appendChild(item);
+            }
 
-	Notification.requestPermission().then(function(result) {
-		if (result === 'denied') {
-			console.log('Geen toestemming gekregen, later nog eens proberen?');
-			return;
-		}
-		if (result === 'default') {
-			console.log('De toestemming is afgewezen.');
-			return;
-		}
-		console.log("Permission granted")
+            document.getElementById("verstuur").addEventListener('click', function(ev){
+                let content = document.getElementById('invoer').value;
 
-	});
+                if (content != ''){
+                    socket.send(content);
+                } else {
+                    alert('Geen bericht ingevoerd');
+                }
+            });
+        }
 
-	registratie.pushManager.getSubscription().then(
-			sub => {
-				if (sub === null) {
-					console.log("Er is nog geen geregistreerde Push-gebruiker");
-					maakPushUser(registratie);
-				}
-			}
-	)
-
-	function maakPushUser(registratie){
-		const publicKey = urlBase64ToUint8Array('BHAuu5QGV-A5mMk2Kpd80cc1edg6bHRrykzjOeEE5S17X2FK5ofmtPhP7vGHwnF9lT9sSOW3PLG2zqF-fx3VaWs');
-
-		registratie.pushManager.subscribe(
-				{
-					userVisibleOnly: true,
-					applicationServerKey: publicKey
-				}
-		).then(
-				sub => {
-					updateSubscriptionAtServer(sub); // hier kunnen we evt informatie naar de server sturen.
-					console.log('User geabonneerd op meldingen');
-				}
-		).catch(
-				fout => {
-					console.log(`Abonneren op notificaties niet gelukt: ${fout}`);
-				}
-		);
-	}
-
-	self.addEventListener('push', function(event) {
-		if (event.data) {
-			let toonBerichtPromise$ = self.registration.showNotification('Speciaal bericht voor u!');
-			event.waitUntil(toonBerichtPromise$);
-		}
-	});
-
-	self.addEventListener('notificationclick', ev => {
-		ev.notification.close();
-		clients.openWindow("https://www.vijfhart.nl"); //TODO clients?
-	});
-
-
-	</script>
+    </script>
 </head>
-
 <body>
-	<div>
-		<div>
-			<ul id="resultGet">
-				
-			</ul>		
-		</div>
-		<button id="getButton">Ophalen JSON data (GET)</button>
-<!--		<button id="pushButton">Maak pushUser</button>-->
-	</div>
+<h2>Bericht versturen via WebSocket (ws)</h2>
+
+<input type="text" id="invoer" placeholder="Voer hier uw bericht in"/>
+<button id="verstuur">Verstuur</button>
 </body>
 </html>
+https://codepen.io/VijfhartTrainer/pen/NWLzmPe

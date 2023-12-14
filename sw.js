@@ -1,3 +1,17 @@
+caches.open("mijnFileCache")
+    .then(cache => {
+        cache.add("mijnStyles.css"); // voegt 1 resource toe
+        cache.addAll(["globalFun.js", "app.js"]); //voegt meerdere resources toe
+    });
+
+caches.open("mijnFileCache")
+    .then(
+        cache => {
+            cache.delete("plaatje1.png")
+                .then( () => {cache.add("plaatje2.png")})
+        }
+    )
+
 self.addEventListener('fetch', event => {
     let url = 'https://bgg-json.azurewebsites.net/collection/edwalter';
     fetch(url).then(response => {
